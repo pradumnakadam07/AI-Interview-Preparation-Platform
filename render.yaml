@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: interviewlab-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build -w @prep/shared && npm run build -w @prep/api
+    startCommand: npm run start -w @prep/api
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: WEB_ORIGIN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash-lite
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AI_DAILY_LIMIT
+        value: "10"
+      - key: CODING_AI_DAILY_LIMIT
+        value: "10"

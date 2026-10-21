@@ -1,0 +1,16 @@
+{
+  "name": "ai-interview-preparation-platform",
+  "private": true,
+  "version": "0.1.0",
+  "engines": { "node": "22.x" },
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @prep/api\" \"npm run dev -w @prep/web\"",
+    "build": "npm run build -w @prep/shared && npm run build -w @prep/api && npm run build -w @prep/web",
+    "typecheck": "npm run typecheck -w @prep/shared && npm run typecheck -w @prep/api && npm run typecheck -w @prep/web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.3"
+  }
+}
