@@ -3,7 +3,7 @@ services:
     name: interviewlab-api
     runtime: node
     plan: free
-    buildCommand: npm ci && npm run build -w @prep/shared && npm run build -w @prep/api
+    buildCommand: npm ci --include=dev && npm run build -w @prep/shared && npm run build -w @prep/api
     startCommand: npm run start -w @prep/api
     healthCheckPath: /api/v1/health
     envVars:
