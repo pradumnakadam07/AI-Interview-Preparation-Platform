@@ -17,6 +17,7 @@ import { evaluateAnswer, generateQuestions } from "./services/gemini.js";
 loadEnv({ path: fileURLToPath(new URL("../.env", import.meta.url)) });
 
 const app = express();
+app.set("trust proxy", 1);
 const port = Number(process.env.PORT ?? 4000);
 const allowedWebOrigins = (process.env.WEB_ORIGIN ?? "http://localhost:5173").split(",").map((origin) => origin.trim()).filter(Boolean);
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 120, standardHeaders: "draft-8", legacyHeaders: false });
@@ -28,16 +29,17 @@ app.use(cors({ origin: (origin, callback) => {
   callback(new Error("Origin is not allowed by CORS"));
 } }));
 app.use(express.json({ limit: "32kb" }));
+
+app.get("/api/v1/health", (_req, res) => {
+  res.json({ status: "ok", aiConfigured: Boolean(process.env.GEMINI_API_KEY), databaseConnected: mongoose.connection.readyState === 1 });
+});
+
 app.use("/api/v1", apiLimiter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/resumes", resumeRouter);
 app.use("/api/v1/sessions", sessionsRouter);
 app.use("/api/v1/fundamentals", fundamentalsRouter);
 app.use("/api/v1/coding", codingRouter);
-
-app.get("/api/v1/health", (_req, res) => {
-  res.json({ status: "ok", aiConfigured: Boolean(process.env.GEMINI_API_KEY), databaseConnected: mongoose.connection.readyState === 1 });
-});
 
 app.post("/api/v1/questions", aiLimiter, async (req, res) => {
   const parsed = interviewSetupSchema.safeParse(req.body);

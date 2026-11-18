@@ -1,5 +1,5 @@
 import { Router } from "express";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { z } from "zod";
 import { requireAuth, type AuthenticatedRequest } from "../middleware/auth.js";
 import { reviewCodingSolution, suggestCodingHint } from "../services/gemini.js";
@@ -11,7 +11,12 @@ codingRouter.use(rateLimit({
   limit: Number(process.env.CODING_AI_DAILY_LIMIT ?? 20),
   standardHeaders: "draft-8",
   legacyHeaders: false,
-  keyGenerator: (req) => (req as AuthenticatedRequest).userId ?? req.ip ?? "unknown",
+  keyGenerator: (req) => {
+    const userId = (req as AuthenticatedRequest).userId;
+    if (userId) return userId;
+    const ip = req.ip ?? req.socket.remoteAddress;
+    return ip ? ipKeyGenerator(ip) : "unknown";
+  },
   message: { code: "CODING_DAILY_LIMIT", message: "You have reached today's coding coach limit. Your drafts are saved locally; try again tomorrow." },
 }));
 
